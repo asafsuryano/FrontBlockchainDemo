@@ -15,7 +15,7 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 50vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,4 +35,17 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.hashUi {
+  background-color: darkgray;
+}
+
+.transactionUI {
+  display: inline;
+  white-space: nowrap;
+}
+
+.allTransactions {
+  outline: 5px solid green;
 }
