@@ -1,13 +1,17 @@
 const sha256 = require("sha256");
 const Crypto=require('crypto');
+const axios = require('axios');
+const { throws } = require("assert");
+
 class Block {
-    constructor(blockNum,nonce,data,prevHash){
+    constructor(blockNum,nonce,data,prevHash,type_code){
         this.nonce=nonce;
         this.data=data;
         this.num=blockNum;
         this.hash="";
         this.prevHash=prevHash;
         this.hash=this.calculateHash();
+        this.type_code=type_code;
     }
     calculateHash(){
         return sha256(this.nonce+this.data+this.prevHash);
@@ -25,10 +29,21 @@ class Block {
             return true;
         }
     }
+    toJSON(){
+        let ans={
+            "type_code": this.type_code,
+            "index":this.num,
+            "nonce":this.nonce,
+            "data":this.data,
+            "prevHash":this.prevHash,
+            "hash":this.hash
+        }
+        return ans;
+    }
 }
 
 class BlockDistributed{
-    constructor(blockNum,nonce,data,prevHash,peer){
+    constructor(blockNum,nonce,data,prevHash,peer,type_code){
         this.nonce=nonce;
         this.data=data;
         this.num=blockNum;
@@ -36,6 +51,7 @@ class BlockDistributed{
         this.hash="";
         this.prevHash=prevHash;
         this.hash=this.calculateHash();
+        this.type_code=type_code;
     }
     calculateHash(){
         return sha256(this.nonce+this.data+this.prevHash);
@@ -53,10 +69,22 @@ class BlockDistributed{
             return true;
         }
     }
+    toJSON(){
+        let ans={
+            "type_code": this.type_code,
+            "index":this.num,
+            "nonce":this.nonce,
+            "data":this.data,
+            "prevHash":this.prevHash,
+            "hash":this.hash,
+            "peer":this.peer
+        }
+        return ans;
+    }
 }
 
 class BlockTransactions{
-    constructor(blockNum,nonce,allTransactions,prevHash,peer){
+    constructor(blockNum,nonce,allTransactions,prevHash,peer,type_code){
         this.nonce=nonce;
         this.allTransactions=allTransactions;
         this.num=blockNum;
@@ -64,6 +92,7 @@ class BlockTransactions{
         this.hash="";
         this.prevHash=prevHash;
         this.hash=this.calculateHash();
+        this.type_code=type_code;
     }
     calculateHash(){
         let allTransactionsString="";
@@ -85,6 +114,22 @@ class BlockTransactions{
             return true;
         }
     }
+    toJSON(){
+        let allTrans=[];
+        for (let i=0;i<this.allTransactions.length;i++){
+            allTrans.push(this.allTransactions[i].toJSON());
+        }
+        let ans={
+            "type_code": this.type_code,
+            "index":this.num,
+            "nonce":this.nonce,
+            "data":allTrans,
+            "prevHash":this.prevHash,
+            "hash":this.hash,
+            "peer":this.peer
+        }
+        return ans;
+    }
 }
 
 class Transaction{
@@ -98,6 +143,16 @@ class Transaction{
     toString(){
         return String(this.amount)+this.from+this.to;
     }
+    toJSON(){
+        let ans={
+            "index":this.number,
+            "amount":this.amount,
+            "from":this.from,
+            "to":this.to,
+            "isCoinbase":this.isCoinbase
+        }
+        return ans;
+    }
 }
 
 class Message {
@@ -110,12 +165,7 @@ class Message {
         return true;
     }
     verifyMessage(key){
-        let verification = Crypto.verify("SHA256",this.text,key);
-        if (this.sign===verification){
-            return true;
-        }else{
-            return false;
-        }
+        return Crypto.verify("SHA256",this.text,key,this.sign);
     }
 }
 
@@ -136,12 +186,175 @@ class TransactionSignature {
         return true;
     }
     verifyTransaction(key){
-        let verification = Crypto.verify("SHA256",this.toString(),key);
-        if (this.sign===verification){
-            return true;
-        }else{
-            return false;
+        return Crypto.verify("SHA256",this.toString(),key,this.sign);
+    }
+    toJSON(){
+        let ans={
+            "index":this.number,
+            "amount":this.amount,
+            "from":this.from,
+            "to":this.to,
+            "isCoinbase":this.isCoinbase,
+            "signature":this.sign
         }
+        return ans;
+    }
+}
+
+class ConnectingWithServerFunctions{
+    static async loadSingleBlock(){
+        var config = {
+        method: 'get',
+        url: 'http://localhost:4341/blocks/single_block',
+        headers: { }
+        };
+        axios(config)
+        .then(function (response) {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    async saveSingleBlock(blockToSave){
+
+    }
+    static async loadBlocksThinBlockchain(){
+        var config = {
+        method: 'get',
+        url: 'http://localhost:4341/blocks/thin_blockchain',
+        headers: { }
+        };
+        axios(config)
+        .then(function (response) {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    async saveBlocksThinBlockchain(blocksToSave){
+
+    }
+    static async loadBlocksDistributed(){
+        var config = {
+            method: 'get',
+            url: 'http://localhost:4341/blocks/distributed',
+            headers: { }
+        };
+        axios(config)
+        .then(function (response) {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    async saveBlocksDistributed(blocksToSave){
+
+    }
+    static async loadBlocksTokens(blocksToSave){
+        var config = {
+            method: 'get',
+            url: 'http://localhost:4341/blocks/tokens',
+            headers: { }
+        };
+        axios(config)
+        .then(function (response) {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    async saveBlocksTokens(blocksToSave){
+
+    }
+    static async loadBlocksCoinbase(blocksToSave){
+        var config = {
+            method: 'get',
+            url: 'http://localhost:4341/blocks/coinbase',
+            headers: { }
+        };
+        axios(config)
+        .then(function (response) {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    async saveBlocksCoinbase(){
+
+    }
+    static async loadAndGenerateKeys(){
+
+    }
+    async loadTransaction(){
+
+    }
+    static async loadFullBlockchain(){
+        var config = {
+            method: 'get',
+            url: 'http://localhost:4341/blocks/full_blockchain',
+            headers: { }
+        };
+        axios(config)
+        .then(function (response) {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    // async mine(difficulty){
+
+    // }
+    // async requestHash(text){
+
+    // }
+    // async requestSign(key,dataString){
+
+    // }
+    // async requestVerify(key,dataString){
+
+    // }
+
+    static async loadKey(){
+        let keys=[]
+        var config = {
+            method: 'get',
+            url: 'http://localhost:4341/key',
+            headers: { }
+        };
+        await axios(config)
+        .then(function (response) {
+            console.log(response);
+            keys.push(response.data[0]['privateKey']);
+            keys.push(response.data[0]['publicKey']);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+        return keys;
+    }
+
+    static async generateNewKey(){
+        let keys=[]
+        var config = {
+            method: 'get',
+            url: 'http://localhost:4341/key/generate',
+            headers: { }
+        };
+        await axios(config)
+        .then(function (response) {
+            keys.push(response.data[0]['privateKey']);
+            keys.push(response.data[0]['publicKey']);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+        return keys;
     }
 }
 
@@ -150,5 +363,7 @@ module.exports={
     BlockDistributed: BlockDistributed,
     BlockTransactions: BlockTransactions,
     Transaction: Transaction,
-    Message: Message
+    Message: Message,
+    TransactionSignature: TransactionSignature,
+    ConnectingWithServerFunctions: ConnectingWithServerFunctions
 }

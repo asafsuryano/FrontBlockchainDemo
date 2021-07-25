@@ -4,10 +4,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import sha256 from 'sha256';
 import {Block} from './ClassesForProject';
 import {BlockDistributed, BlockTransactions, Transaction} from './ClassesForProject';
-import { Message } from './ClassesForProject';
+import { Message, TransactionSignature } from './ClassesForProject';
+import {ConnectingWithServerFunctions} from './ClassesForProject';
 import axios from  'axios';
 const crypto=require("crypto");
 const { generateKeyPair } = require('crypto');
+
 
 function App() {
   const [Page,ChangeState] = useState(0);
@@ -20,6 +22,11 @@ function App() {
         <button onClick={()=>ChangeState(4)}> Distributed</button>
         <button onClick={()=>ChangeState(5)}> Tokens</button>
         <button onClick={()=>ChangeState(6)}> Coinbase</button>
+        <button onClick={()=>ChangeState(7)}> Keys</button>
+        <button onClick={()=>ChangeState(8)}> Signature</button>
+        <button onClick={()=>ChangeState(9)}> TransactionSignature</button>
+        <button onClick={()=>ChangeState(10)}> Blockchain</button>
+
       </header>
       {(Page==1 &&
       <HashUi />)||
@@ -32,7 +39,15 @@ function App() {
       (Page==5 &&
       <Tokens />)||
       (Page==6 &&
-      <Coinbase />)}
+      <Coinbase />)||
+      (Page==7 &&
+      <Keys />)||
+      (Page==8 &&
+      <SignatureAndVerify />)||
+      (Page==9 &&
+      <TransactionSignOrVerify />)||
+      (Page==10 &&
+      <FullBlockchain />)}
     </div>
   );
 }
@@ -245,6 +260,15 @@ function Tokens(){
   let peerNumber=1;
   let i=0;
   const [AllBlocksTokens,ChangeBlocks]=useState(blocks);
+  let ChangeByIndex=((blockToChange)=>{
+    let newAllblocksPeers=AllBlocksTokens.slice();
+    newAllblocksPeers[blockToChange.peer][blockToChange.num]=blockToChange;
+    for (let i=blockToChange.num+1;i<newAllblocksPeers[blockToChange.peer].length;i++){
+      newAllblocksPeers[blockToChange.peer][i].prevHash=newAllblocksPeers[blockToChange.peer][i-1].hash;
+      newAllblocksPeers[blockToChange.peer][i].hash=newAllblocksPeers[blockToChange.peer][i].calculateHash();
+    }
+    ChangeBlocks([...newAllblocksPeers])
+  })
   return(
     <div>
       {
@@ -267,6 +291,15 @@ function Coinbase(){
   let peerNumber=1;
   let i=0;
   const [AllBlocksCoinbase,ChangeBlocks]=useState(blocks);
+  let ChangeByIndex=((blockToChange)=>{
+    let newAllblocksPeers=AllBlocksCoinbase.slice();
+    newAllblocksPeers[blockToChange.peer][blockToChange.num]=blockToChange;
+    for (let i=blockToChange.num+1;i<newAllblocksPeers[blockToChange.peer].length;i++){
+      newAllblocksPeers[blockToChange.peer][i].prevHash=newAllblocksPeers[blockToChange.peer][i-1].hash;
+      newAllblocksPeers[blockToChange.peer][i].hash=newAllblocksPeers[blockToChange.peer][i].calculateHash();
+    }
+    ChangeBlocks([...newAllblocksPeers])
+  })
   return(
     <div>
       {
@@ -275,7 +308,7 @@ function Coinbase(){
             <div>
               <h1>{"peer "+peerNumber++}</h1>
               {peerType.map(element=>
-                <BlockWithTransactions newBlock = {element} prevHash={element.prevHash} key={i++} />)}
+                <BlockWithTransactions updateBlockchainPeer={ChangeByIndex} newBlock = {element} prevHash={element.prevHash} key={i++} />)}
             </div>
           )
         })
@@ -295,7 +328,7 @@ function BlockWithTransactions(props){
     }
     if (Block3Changed[1]){
       Block3Changed[1]=false;
-      //props.updateBlockchainPeer(Block3Changed[0]);
+      props.updateBlockchainPeer(Block3Changed[0]);
     }
   })
   let calculateNewHashAndChangeBlockchain=((transaction)=>{
@@ -382,41 +415,21 @@ function TransactionUi(props){
 }
 
 function Keys(){
-  const [Keys,ChangeKey]=useState("");
-  generateKeyPair('rsa', {
-    modulusLength: 4096,
-    publicKeyEncoding: {
-      type: 'spki',
-      format: 'pem'
-    },
-    privateKeyEncoding: {
-      type: 'pkcs8',
-      format: 'pem',
+  const [Keys,ChangeKey]=useState([]);
+  useEffect(()=>{
+    if (Keys[0]!==undefined){
+      document.getElementById("private").value=Keys[0].slice(27,Keys[0].length-26);
+      document.getElementById("public").value=Keys[1].slice(26,Keys[1].length-25);
     }
-  }, (err, publicKey, privateKey) => {
-    ChangeKey([privateKey,publicKey]);
-  });
+  })
   return(
     <div>
       <form>
-        <button onClick={()=>{
-          generateKeyPair('rsa', {
-            modulusLength: 4096,
-            publicKeyEncoding: {
-            type: 'spki',
-            format: 'pem'
-          },
-          privateKeyEncoding: {
-            type: 'pkcs8',
-            format: 'pem',
-          }
-        }, (err, publicKey, privateKey) => {
-          ChangeKey([privateKey,publicKey]);
-        });
-      }}>Generate random key pair</button>
+        <button onClick={()=>{}}>Generate random key pair</button>
         <label for="private">Private key</label>
         <input type="text" id="private" name="private" value={Keys[0]} readOnly></input>
         <br></br>
+        <label for="public"> Public key</label>
         <input type="text" id="public" name="public" value={Keys[1]} readOnly></input>
       </form>
     </div>
@@ -449,7 +462,7 @@ function SignatureAndVerify(){
             <br></br>
             <label for="signature">Signature</label>
             <br></br>
-            <input type="text" id="signature" name="signature" value={MessageDetails.sign} readonly></input>
+            <input type="text" id="signature" name="signature" value={MessageDetails.sign} readOnly></input>
           </form>
         </div>))||
         (SignOrVerify==2 &&
@@ -468,9 +481,9 @@ function SignatureAndVerify(){
               <br></br>
               <button  onClick={()=>{
                 if (MessageDetails.verifyMessage(keys[1])){
-                  document.getElementById("messageBlock").style.backgroundColor="red";
-                }else{
                   document.getElementById("messageBlock").style.backgroundColor="green";
+                }else{
+                  document.getElementById("messageBlock").style.backgroundColor="red";
                 }
               }}>Verify</button>
               <br></br>
@@ -481,7 +494,7 @@ function SignatureAndVerify(){
 }
 
 function TransactionSignOrVerify(){
-  const [MessageDetails,ChangeTransaction]=useState(new Message(""));
+  const [MessageDetails,ChangeTransaction]=useState(new TransactionSignature(0,20,"A","B",false));
   const [SignOrVerify,ChangeState]=useState(1);
   let keys=loadKeys();
   return(
@@ -493,11 +506,184 @@ function TransactionSignOrVerify(){
       <div>
       {(SignOrVerify==1 &&
         (<div>
+          <form>
+            <div className="transactionSignVer">
+              <label for="amount">Amount</label>
+              <input type="text" id="amount" name="amount" value={MessageDetails.amount} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(MessageDetails.number,e.target.value,MessageDetails.from,MessageDetails.to,MessageDetails.isCoinbase))
+              }}></input>
+              <label for="from">From</label>
+              <input type="text" id="from" name="from" value={MessageDetails.from} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(MessageDetails.number,MessageDetails.amount,e.target.value,MessageDetails.to,MessageDetails.isCoinbase))
+              }}></input>
+              <label for="to">To</label>
+              <input type="text" id="to" name="to" value={MessageDetails.to} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(MessageDetails.number,MessageDetails.amount,MessageDetails.from,e.target.value,MessageDetails.isCoinbase))
+              }}></input>
+            </div>
+            <label for="privateKey">Private Key</label>
+            <br></br>
+            <input type="text" id="privateKey" name="privateKey" value={keys[0]}></input>
+            <br></br>
+            <button onClick={()=>{MessageDetails.signTransaction(keys[0])}}>Sign transaction</button>
+            <br></br>
+            <label for="transactionSig">Transaction signature</label>
+            <br></br>
+            <input type="text" id="transactionSig" name="transactionSig" value={MessageDetails.sign} readOnly></input>
+          </form>
         </div>))||
         (SignOrVerify==2 &&
-          (<div id="messageBlock">
+          (<div id="TransactionBox">
+            <form>
+            <div className="transactionSignVer">
+              <label for="amount">Amount</label>
+              <input type="text" id="amount" name="amount" value={MessageDetails.amount} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(MessageDetails.number,e.target.value,MessageDetails.from,MessageDetails.to,MessageDetails.isCoinbase))
+              }}></input>
+              <label for="from">From</label>
+              <input type="text" id="from" name="from" value={MessageDetails.from} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(MessageDetails.number,MessageDetails.amount,e.target.value,MessageDetails.to,MessageDetails.isCoinbase))
+              }}></input>
+              <label for="to">To</label>
+              <input type="text" id="to" name="to" value={MessageDetails.to} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(MessageDetails.number,MessageDetails.amount,MessageDetails.from,e.target.value,MessageDetails.isCoinbase))
+              }}></input>
+            </div>
+            <br></br>
+            <label for="PublicKey">Public Key</label>
+            <br></br>
+            <input type="text" id="publicKey" name="publicKey" value={keys[1]}></input>
+            <br></br>
+            <label for="transactionSig">Transaction signature</label>
+            <br></br>
+            <input type="text" id="transactionSig" name="transactionSig" value={MessageDetails.sign} readOnly></input>
+            <br></br>
+            <button onClick={()=>{
+              if (MessageDetails.verifyTransaction(keys[1])){
+                document.getElementById("TransactionBox").style.backgroundColor="green";
+              }else{
+                document.getElementById("TransactionBox").style.backgroundColor="red";
+              }}}>Verify transaction</button>
+          </form>
           </div>))}
       </div>
+    </div>
+  )
+}
+
+function FullBlockchain(){
+  let blocksInChain=loadAllBlocksInChain();
+  const [AllBlocksInBlockchain,ChangeBlocks]=useState(blocksInChain);
+  let keys=loadKeys();
+  let i=1;
+  let ChangeByIndex=((blockToChange)=>{
+    let newAllblocksPeers=AllBlocksInBlockchain.slice();
+    newAllblocksPeers[blockToChange.peer][blockToChange.num]=blockToChange;
+    for (let i=blockToChange.num+1;i<newAllblocksPeers[blockToChange.peer].length;i++){
+      newAllblocksPeers[blockToChange.peer][i].prevHash=newAllblocksPeers[blockToChange.peer][i-1].hash;
+      newAllblocksPeers[blockToChange.peer][i].hash=newAllblocksPeers[blockToChange.peer][i].calculateHash();
+    }
+    ChangeBlocks([...newAllblocksPeers])
+  })
+  return (
+    <div>
+      {AllBlocksInBlockchain.map((peerType)=>{
+        return(
+          <div>
+            <h1>{"Peer "+i++}</h1>
+            {peerType.map((element)=>{
+              <BlockFullBlockchain ChangeByIndex={ChangeByIndex} publicKey={keys[1]} newBlock={element} />
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function BlockFullBlockchain(props){
+  const [Block4Change,ChangeBlock]=useState([props.newBlock,false]);
+  let calculateNewHashAndChangeBlockchain=((transaction)=>{
+    let allTransactions=Block4Change[0].allTransactions;
+    allTransactions[transaction.number]=transaction;
+    let newBlock=new BlockTransactions(Block4Change[0].num,Block4Change[0].nonce,allTransactions,Block4Change[0].prevHash,Block4Change[0].peer);
+    ChangeBlock([newBlock,true]);
+  })
+  useEffect(()=>{
+    document.getElementById("hash").value=Block4Change[0].hash;
+    if (Block4Change[0].checkCorrectHash(3)){
+      document.getElementById("block"+Block4Change[0].peer+Block4Change[0].num).style.backgroundColor="green";
+    }else{
+      document.getElementById("block"+Block4Change[0].peer+Block4Change[0].num).style.backgroundColor="red";
+    }
+    if (Block4Change[1]==true){
+      Block4Change[1]=false;
+      props.ChangeByIndex(Block4Change[0]);
+    }
+  })
+  return(
+    <div id={"block"+Block4Change[0].peer+Block4Change[0].num}>
+      <form>
+        <input type="text" id="blockNum" name="blockNum" value={Block4Change[0].num}></input>
+        <label for="blockNum">block number:</label>
+        <br></br>
+        <input type="text" id={"nonce"+Block4Change[0].num} name={"nonce"} value={Block4Change[0].nonce} onChange={(e)=>{
+          //e.stopPropagation()
+          ChangeBlock([...[new Block(Block4Change[0].num,e.target.value,Block4Change[0].data,Block4Change[0].prevHash),true]]);
+        }}></input>
+        <label for="nonce">nonce:</label>
+        <br></br>
+          <div className="allTransactions">
+            <p>Tx: </p>
+            {Block4Change[0].allTransactions.map(transaction=>
+            <TransactionFullBlockchain transaction={transaction} publicKey={props.publicKey} updateTransaction={calculateNewHashAndChangeBlockchain} key={transaction.number} />)}
+          </div>
+        <label for="prevHash"> Prev Hash</label>
+        <input type="text" id="prevHash" name="prevHash" value={Block4Change[0].prevHash} readOnly></input>
+        <br></br>
+        <label for="hash">Hash</label>
+        <input type="text" id="hash" name="hash" value={Block4Change[0].hash} readOnly></input>
+        <br></br>
+      </form>
+    </div>
+  );
+
+}
+
+function TransactionFullBlockchain(props){
+  const [TransactionDetails,ChangeTransaction]=useState([props.transaction,false]);
+  useEffect(()=>{
+    if (TransactionDetails[0].verifyTransaction(props.publicKey)){
+      document.getElementById("transactionSig").style.color="black";
+    }else{
+      document.getElementById("transactionSig").style.color="red";
+    }
+    if (TransactionDetails[1]==true){
+      TransactionDetails[1]=false;
+      props.updateTransaction(TransactionDetails[0]);
+    }
+  })
+  return(
+    <div>
+        <form>
+          <div className="transactionSignVer">
+            <label for="amount">Amount</label>
+            <input type="text" id="amount" name="amount" value={TransactionDetails.amount} onChange={(e)=>{
+              ChangeTransaction([new TransactionSignature(TransactionDetails[0].number,e.target.value,TransactionDetails[0].from,TransactionDetails[0].to,TransactionDetails[0].isCoinbase),true]);
+            }}></input>
+            <label for="from">From</label>
+            <input type="text" id="from" name="from" value={TransactionDetails.from} onChange={(e)=>{
+              ChangeTransaction([new TransactionSignature(TransactionDetails[0].number,TransactionDetails[0].amount,e.target.value,TransactionDetails[0].to,TransactionDetails[0].isCoinbase),true]);
+            }}></input>
+            <label for="to">To</label>
+            <input type="text" id="to" name="to" value={TransactionDetails.to} onChange={(e)=>{
+              ChangeTransaction([new TransactionSignature(TransactionDetails[0].number,TransactionDetails[0].amount,TransactionDetails[0].from,e.target.value,TransactionDetails[0].isCoinbase),true]);
+            }}></input>
+          </div>
+          <label for="transactionSig">Transaction signature</label>
+          <br></br>
+          <input type="text" id="transactionSig" name="transactionSig" value={TransactionDetails[0].sign} readOnly></input>
+        </form>
     </div>
   )
 }
@@ -656,4 +842,9 @@ function loadKeys(){
     return [privateKey,publicKey];
   });
 }
+
+function loadAllBlocksInChain(){
+
+}
+
 export default App;
