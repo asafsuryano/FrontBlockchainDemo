@@ -209,8 +209,10 @@ async function postFullBlockchain(){
   });
 }
 
-//postThinBlockchain();
+
+postThinBlockchain();
 postDistributedBlockchain();
 postTokens();
 postCoinbase();
+postFullBlockchain();
 

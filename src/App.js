@@ -693,11 +693,10 @@ function FullBlockchain(){
   let i=1;
   let ChangeByIndex=((blockToChange)=>{
     let newAllblocksPeers=KeysAndAllBlocksInBlockchain[1].slice();
-    console.log(blockToChange);
     newAllblocksPeers[blockToChange.peer][blockToChange.num]=blockToChange;
     for (let i=blockToChange.num+1;i<newAllblocksPeers[blockToChange.peer].length;i++){
       newAllblocksPeers[blockToChange.peer][i].prevHash=newAllblocksPeers[blockToChange.peer][i-1].hash;
-      newAllblocksPeers[blockToChange.peer][i].hash=newAllblocksPeers[blockToChange.peer][i].calculateHash();
+      newAllblocksPeers[blockToChange.peer][i].calculateHash();
     }
     Change([KeysAndAllBlocksInBlockchain[0],newAllblocksPeers]) 
   })
@@ -706,15 +705,21 @@ function FullBlockchain(){
     console.log("loaded keys");
     let allBlocks=await ConnectingWithServerFunctions.loadFullBlockchain();
     console.log("loaded all blocks");
+    console.log(allBlocks);
     for (let i=0;i<allBlocks.length;i++){
       for (let j=0;j<allBlocks[i].length;j++){
         for (let k=0;k<allBlocks[i][j].allTransactions.length;k++){
           allBlocks[i][j].allTransactions[k].sign=await allBlocks[i][j].allTransactions[k].signTransaction(keys[0]);
         }
+        if (j>0){
+          allBlocks[i][j].prevHash=allBlocks[i][j-1].hash;
+        }
+        allBlocks[i][j].mine(4);
       }
-      console.log("finished with "+i+" block");
+      console.log("finished with "+i+" peer");
     }
-    Change([keys,allBlocks]);
+    let temp=allBlocks.slice();
+    Change([keys,temp]);
   })
   if (mounted.current){
     mounted.current=false;
@@ -746,90 +751,106 @@ function FullBlockchain(){
 }
 
 function BlockFullBlockchain(props){
-  const [Block4Change,ChangeBlock]=useState([props.newBlock,false]);
+  const [Block4Change,ChangeBlock]=useState(props.newBlock);
   let calculateNewHashAndChangeBlockchain=((transaction)=>{
-    let allTransactions=Block4Change[0].allTransactions;
+    let allTransactions=Block4Change.allTransactions.slice();
     allTransactions[transaction.number]=transaction;
-    let newBlock=new BlockTransactions(Block4Change[0].num,Block4Change[0].nonce,allTransactions,Block4Change[0].prevHash,"",Block4Change[0].peer,Block4Change[0].type_code);
-    ChangeBlock([newBlock,true]);
+    let newBlock=new BlockTransactions(Block4Change.num,Block4Change.nonce,allTransactions,Block4Change.prevHash,"",Block4Change.peer,Block4Change.type_code);
+    ChangeBlock(newBlock);
   })
   useEffect(()=>{
-    document.getElementById("hash").value=Block4Change[0].hash;
-    if (Block4Change[0].checkCorrectHash(4)){
-      document.getElementById("block"+Block4Change[0].peer+Block4Change[0].num).style.backgroundColor="green";
-    }else{
-      document.getElementById("block"+Block4Change[0].peer+Block4Change[0].num).style.backgroundColor="red";
-    }
-    if (Block4Change[1]===true){
-      Block4Change[1]=false;
-      props.ChangeByIndex(Block4Change[0]);
-    }
+    //if (mounted.current){
+      if (Block4Change.checkCorrectHash(4)){
+        document.getElementById("block"+Block4Change.peer+Block4Change.num).style.backgroundColor="green";
+      }else{
+        document.getElementById("block"+Block4Change.peer+Block4Change.num).style.backgroundColor="red";
+      }
+    //}
   })
+  useEffect(()=>{
+    document.getElementById("hash").value=Block4Change.hash;
+    if (Block4Change.checkCorrectHash(4)){
+      document.getElementById("block"+Block4Change.peer+Block4Change.num).style.backgroundColor="green";
+    }else{
+      document.getElementById("block"+Block4Change.peer+Block4Change.num).style.backgroundColor="red";
+    }
+      props.ChangeByIndex(Block4Change);
+  },[Block4Change])
   return(
-    <div id={"block"+Block4Change[0].peer+Block4Change[0].num}>
+    <div id={"block"+Block4Change.peer+Block4Change.num}>
       <form>
-        <input type="text" id="blockNum" name="blockNum" value={Block4Change[0].num}></input>
+        <input type="text" id="blockNum" name="blockNum" value={Block4Change.num}></input>
         <label for="blockNum">block number:</label>
         <br></br>
-        <input type="text" id={"nonce"+Block4Change[0].num} name={"nonce"} value={Block4Change[0].nonce} onChange={(e)=>{
+        <input type="text" id={"nonce"+Block4Change.num} name={"nonce"} value={Block4Change.nonce} onChange={(e)=>{
           //e.stopPropagation()
-          ChangeBlock([new BlockTransactions(Block4Change[0].num,e.target.value,Block4Change[0].allTransactions,Block4Change[0].prevHash,"",Block4Change[0].peer,Block4Change[0].type_code),true]);
+          let temp=e.target.value;
+          if (Number(temp)!=='NaN'){
+            temp=Number(temp);
+          }
+          ChangeBlock(new BlockTransactions(Block4Change.num,temp,Block4Change.allTransactions,Block4Change.prevHash,"",Block4Change.peer,Block4Change.type_code));
         }}></input>
         <label for="nonce">nonce:</label>
         <br></br>
           <div className="allTransactions">
             <p>Tx: </p>
-            {Block4Change[0].allTransactions.map(transaction=>
+            {Block4Change.allTransactions.map(transaction=>
             <TransactionFullBlockchain transaction={transaction} publicKey={props.publicKey} updateTransaction={calculateNewHashAndChangeBlockchain} key={transaction.number} />)}
           </div>
         <label for="prevHash"> Prev Hash</label>
-        <input type="text" id="prevHash" name="prevHash" value={Block4Change[0].prevHash} readOnly></input>
+        <input type="text" id="prevHash" name="prevHash" value={Block4Change.prevHash} readOnly></input>
         <br></br>
         <label for="hash">Hash</label>
-        <input type="text" id="hash" name="hash" value={Block4Change[0].hash} readOnly></input>
+        <input type="text" id="hash" name="hash" value={Block4Change.hash} readOnly></input>
         <br></br>
       </form>
+      <button onClick={()=>{Block4Change.mine(4);
+        ChangeBlock(new BlockTransactions(Block4Change.num,Block4Change.nonce,Block4Change.allTransactions,Block4Change.prevHash,Block4Change.hash,Block4Change.peer,Block4Change.type_code))}}>Mine</button>
     </div>
   );
 
 }
 
 function TransactionFullBlockchain(props){
-  const [TransactionDetails,ChangeTransaction]=useState([props.transaction,false]);
+  const [TransactionDetails,ChangeTransaction]=useState(props.transaction);
   useEffect(()=>{
-    if (TransactionDetails[0].verifyTransaction(props.publicKey)){
+    if (TransactionDetails.verifyTransaction(props.publicKey)){
       document.getElementById("transactionSig").style.color="black";
     }else{
       document.getElementById("transactionSig").style.color="red";
     }
-    if (TransactionDetails[1]===true){
-      TransactionDetails[1]=false;
-      props.updateTransaction(TransactionDetails[0]);
-    }
-  })
+      props.updateTransaction(TransactionDetails);
+  },[TransactionDetails])
+  if (TransactionDetails.isCoinbase){
+    return (
+      <h1>TTTT</h1>
+    )
+  } else {
   return(
-    <div>
-        <form>
-          <div className="transactionSignVer">
-            <label for="amount">Amount</label>
-            <input type="text" id="amount" name="amount" value={TransactionDetails.amount} onChange={(e)=>{
-              ChangeTransaction([new TransactionSignature(TransactionDetails[0].number,e.target.value,TransactionDetails[0].from,TransactionDetails[0].to,TransactionDetails[0].isCoinbase),true]);
-            }}></input>
-            <label for="from">From</label>
-            <input type="text" id="from" name="from" value={TransactionDetails.from} onChange={(e)=>{
-              ChangeTransaction([new TransactionSignature(TransactionDetails[0].number,TransactionDetails[0].amount,e.target.value,TransactionDetails[0].to,TransactionDetails[0].isCoinbase),true]);
-            }}></input>
-            <label for="to">To</label>
-            <input type="text" id="to" name="to" value={TransactionDetails.to} onChange={(e)=>{
-              ChangeTransaction([new TransactionSignature(TransactionDetails[0].number,TransactionDetails[0].amount,TransactionDetails[0].from,e.target.value,TransactionDetails[0].isCoinbase),true]);
-            }}></input>
-          </div>
-          <label for="transactionSig">Transaction signature</label>
-          <br></br>
-          <input type="text" id="transactionSig" name="transactionSig" value={TransactionDetails[0].sign} readOnly></input>
-        </form>
-    </div>
-  )
+      <div>
+          <form>
+            <div className="transactionSignVer">
+              <label for="amount">Amount</label>
+              <input type="text" id="amount" name="amount" value={TransactionDetails.amount} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(TransactionDetails.number,e.target.value,TransactionDetails.from,TransactionDetails.to,TransactionDetails.isCoinbase));
+              }}></input>
+              <label for="from">From</label>
+              <input type="text" id="from" name="from" value={TransactionDetails.from} onChange={(e)=>{
+                console.log(e.target.value);
+                ChangeTransaction(new TransactionSignature(TransactionDetails.number,TransactionDetails.amount,e.target.value,TransactionDetails.to,TransactionDetails.isCoinbase));
+              }}></input>
+              <label for="to">To</label>
+              <input type="text" id="to" name="to" value={TransactionDetails.to} onChange={(e)=>{
+                ChangeTransaction(new TransactionSignature(TransactionDetails.number,TransactionDetails.amount,TransactionDetails.from,e.target.value,TransactionDetails.isCoinbase));
+              }}></input>
+            </div>
+            <label for="transactionSig">Transaction signature</label>
+            <br></br>
+            <input type="text" id="transactionSig" name="transactionSig" value={TransactionDetails.sign} readOnly></input>
+          </form>
+      </div>
+    )
+  }
 }
 
 // function loadBlocks(){

@@ -91,13 +91,6 @@ class BlockDistributed{
 }
 
 class BlockTransactions{
-    nonce;
-    allTransactions;
-    num;
-    peer;
-    hash;
-    prevHash;
-    type_code;
     constructor(blockNum,nonce,allTransactions,prevHash,hash,peer,type_code){
         this.nonce=nonce;
         this.allTransactions=allTransactions;
@@ -118,7 +111,8 @@ class BlockTransactions{
         this.hash = sha256(this.nonce+allTransactionsString+this.prevHash);
     }
     mine(difficulty) {
-        this.nonce=0
+        this.nonce=0;
+        this.calculateHash();
         while (this.hash.substring(0,difficulty)!==Array(difficulty+1).join('0')){
             this.nonce++;
             this.calculateHash();
@@ -179,8 +173,11 @@ class Message {
     }
     async signMessage(key){
         let ans;
-        console.log(this.sign);
-        let  toURL='http://localhost:4341/key/sign/'+this.text;
+        let temp=this.text;
+        if (this.text===""){
+            temp="empty"
+        }
+        let  toURL='http://localhost:4341/key/sign/'+temp;
         var config = {
             method: 'get',
             url: toURL,
@@ -198,7 +195,11 @@ class Message {
     }
     async verifyMessage(key){
         let ans;
-        let  toURL='http://localhost:4341/key/verify/'+this.text+'/'+this.sign;
+        let temp=this.text;
+        if (this.text===""){
+            temp="empty"
+        }
+        let  toURL='http://localhost:4341/key/verify/'+temp+'/'+this.sign;
         var config = {
             method: 'get',
             url: toURL,
@@ -275,7 +276,6 @@ class TransactionSignature {
         return ans;
     }
 }
-
 class ConnectingWithServerFunctions{
     static async loadSingleBlock(){
         var config = {
@@ -290,9 +290,6 @@ class ConnectingWithServerFunctions{
         .catch(function (error) {
             console.log(error);
         });
-    }
-    async saveSingleBlock(blockToSave){
-
     }
     static async loadBlocksThinBlockchain(){
         let ans=[];
@@ -365,9 +362,6 @@ class ConnectingWithServerFunctions{
 
         return ans;
     }
-    async saveBlocksDistributed(blocksToSave){
-
-    }
     static async loadBlocksTokens(blocksToSave){
         let ans=[];
         var config = {
@@ -396,9 +390,6 @@ class ConnectingWithServerFunctions{
             console.log(error);
         });
         return ans;
-    }
-    async saveBlocksTokens(blocksToSave){
-
     }
     static async loadBlocksCoinbase(blocksToSave){
         let ans=[];
@@ -429,15 +420,6 @@ class ConnectingWithServerFunctions{
         });
         return ans;
     }
-    async saveBlocksCoinbase(){
-
-    }
-    static async loadAndGenerateKeys(){
-
-    }
-    async loadTransaction(){
-
-    }
     static async loadFullBlockchain(){
         let ans=[];
         var config = {
@@ -447,21 +429,19 @@ class ConnectingWithServerFunctions{
         };
         await axios(config)
         .then(function (response) {
+            console.log(response);
             let peer1=[];
             let peer2=[];
             let peer3=[];
-            console.log("length of data "+response.data.length);
             for (let i=0;i<response.data.length;i+=3){
-                console.log(i);
                 let allTransactions=[];
-                console.log("block number "+((i/3)+1));
                 for (let j=0;j<response.data[i].data.length;j++){
                     allTransactions.push(new TransactionSignature(response.data[i].data[j].index,response.data[i].data[j].amount,
                         response.data[i].data[j].from,response.data[i].data[j].to,response.data[i].data[j].isCoinbase,response.data[i].data[j].signature));
                 }
-                peer1.push(new BlockTransactions(response.data[i].num,response.data[i].nonce,allTransactions,response.data[i].prevHash,response.data[i].hash,response.data[i].type_code));
-                peer2.push(new BlockTransactions(response.data[i+1].num,response.data[i+1].nonce,allTransactions,response.data[i+1].prevHash,response.data[i+1].hash,response.data[i+1].type_code));
-                peer3.push(new BlockTransactions(response.data[i+2].num,response.data[i+2].nonce,allTransactions,response.data[i+2].prevHash,response.data[i+2].hash,response.data[i].type_code));
+                peer1.push(new BlockTransactions(response.data[i].num,response.data[i].nonce,allTransactions,response.data[i].prev,response.data[i].hash,0,response.data[i].type_code));
+                peer2.push(new BlockTransactions(response.data[i+1].num,response.data[i+1].nonce,allTransactions,response.data[i+1].prev,response.data[i+1].hash,1,response.data[i+1].type_code));
+                peer3.push(new BlockTransactions(response.data[i+2].num,response.data[i+2].nonce,allTransactions,response.data[i+2].prev,response.data[i+2].hash,2,response.data[i].type_code));
             }
             ans.push(peer1,peer2,peer3);
         })
@@ -470,19 +450,6 @@ class ConnectingWithServerFunctions{
         });
         return ans; 
     }
-    // async mine(difficulty){
-
-    // }
-    // async requestHash(text){
-
-    // }
-    // async requestSign(key,dataString){
-
-    // }
-    // async requestVerify(key,dataString){
-
-    // }
-
     static async loadKey(){
         let keys=[]
         var config = {
