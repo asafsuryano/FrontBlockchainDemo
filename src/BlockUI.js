@@ -42,8 +42,6 @@ function BlockUi(){
           <InputProp type="text" name="blockHash" isReadOnly={true} text="Hash:" value={Block1.hash}
             ></InputProp>
 
-            {/* <input type="text" id="blockHash" name="blockHash" readOnly></input>
-            <label for="blockHash">Hash:</label> */}
           </form>
           <MineButton onClick={()=>{
             Block1.mine(4);
@@ -51,8 +49,6 @@ function BlockUi(){
             };
             ChangeParameters(block);
             
-            // ChangeParameters(new Block(Block1.num,Block1.nonce,Block1.data,Block1.prevHash,Block1.hash,Block1.type_code))
-            // ChangeParameters(prevBlock => {return new Block(Block1.num,Block1.nonce,Block1.data,Block1.prevHash,Block1.hash,Block1.type_code)});
             
             }}></MineButton>
       </div>
