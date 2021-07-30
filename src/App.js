@@ -10,23 +10,24 @@ import Keys from './KeysUI';
 import SignatureAndVerify from './MessageSigAndVerify';
 import TransactionSignOrVerify from './SignAndVerifyTransaction';
 import FullBlockchain from './FullBlockchain';
+import Button from './Button'
 
 
 function App() {
   const [Page,ChangeState] = useState(0);
   return (
     <div className="App">
-      <header className="App-header">
-        <button onClick={()=>ChangeState(1)}> Hash </button>
-        <button onClick={()=>ChangeState(2)}> Block </button>
-        <button onClick={()=>ChangeState(3)}> Thin Blockchain</button>
-        <button onClick={()=>ChangeState(4)}> Distributed</button>
-        <button onClick={()=>ChangeState(5)}> Tokens</button>
-        <button onClick={()=>ChangeState(6)}> Coinbase</button>
-        <button onClick={()=>ChangeState(7)}> Keys</button>
-        <button onClick={()=>ChangeState(8)}> Signature</button>
-        <button onClick={()=>ChangeState(9)}> TransactionSignature</button>
-        <button onClick={()=>ChangeState(10)}> Full Blockchain</button>
+      <header className="App-header header">
+      <Button onClick={()=>ChangeState(1)} text="Hash"></Button>
+      <Button onClick={()=>ChangeState(2)} text="Block"></Button>
+      <Button onClick={()=>ChangeState(3)} text="Thin Blockchain"></Button>
+      <Button onClick={()=>ChangeState(4)} text="Distributed"></Button>
+      <Button onClick={()=>ChangeState(5)} text="Tokens"></Button>
+      <Button onClick={()=>ChangeState(6)} text="Coinbase"></Button>
+      <Button onClick={()=>ChangeState(7)} text="Keys"></Button>
+      <Button onClick={()=>ChangeState(8)} text="Signature"></Button>
+      <Button onClick={()=>ChangeState(9)} text="TransactionSignature"></Button>
+      <Button onClick={()=>ChangeState(10)} text="Full Blockchain"></Button>
       </header>
       {(Page===1 &&
       <HashUi />)||

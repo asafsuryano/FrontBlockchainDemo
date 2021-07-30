@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {Block} from './ClassesForProject';
-
+import MineButton from './MineButton'
 
 function BlockUi(){
     const [Block1,ChangeParameters]=useState(new Block(0,0,"","","","single"));
@@ -27,7 +27,7 @@ function BlockUi(){
             <input type="text" id="blockHash" name="blockHash" readOnly></input>
             <label for="blockHash">Hash:</label>
           </form>
-          <button onClick={()=>{Block1.mine(4);ChangeParameters(new Block(Block1.num,Block1.nonce,Block1.data,Block1.prevHash,Block1.hash,Block1.type_code))}}>Mine</button>
+          <MineButton onClick={()=>{Block1.mine(4);ChangeParameters(new Block(Block1.num,Block1.nonce,Block1.data,Block1.prevHash,Block1.hash,Block1.type_code))}}></MineButton>
       </div>
       </div>
     );

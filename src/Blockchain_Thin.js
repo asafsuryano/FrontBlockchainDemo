@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {Block} from './ClassesForProject';
 import {ConnectingWithServerFunctions} from './ClassesForProject';
+import MineButton from './MineButton'
 
 
 function BlockChainUI(){
@@ -92,7 +93,7 @@ function BlockBlockchainUi(props){
           <br></br>
           <br></br>
         </form>
-        <button onClick={()=>{Block2Changed.mine(4);ChangeParameters(new Block(Block2Changed.num,Block2Changed.nonce,Block2Changed.data,Block2Changed.prevHash,Block2Changed.hash,Block2Changed.type_code))}}>Mine</button>
+        <MineButton onClick={()=>{Block2Changed.mine(4);ChangeParameters(new Block(Block2Changed.num,Block2Changed.nonce,Block2Changed.data,Block2Changed.prevHash,Block2Changed.hash,Block2Changed.type_code))}}>Mine</MineButton>
       </div>
     );
 }

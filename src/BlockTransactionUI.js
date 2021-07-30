@@ -1,7 +1,7 @@
 import {BlockDistributed, BlockTransactions, Transaction} from './ClassesForProject';
 import {ConnectingWithServerFunctions} from './ClassesForProject';
 import React, { useEffect, useState, useRef } from 'react';
-
+import MineButton from './MineButton'
 
 function BlockWithTransactions(props){
     const [Block3Changed,ChangeParameters]=useState(props.newBlock);
@@ -56,10 +56,10 @@ function BlockWithTransactions(props){
           <label for="blockHash">Hash:</label>
           <br></br>
         </form>
-        <button onClick={()=>{
+        <MineButton onClick={()=>{
           Block3Changed.mine(4);
           ChangeParameters(new BlockTransactions(Block3Changed.num,Block3Changed.nonce,Block3Changed.allTransactions,Block3Changed.prevHash,Block3Changed.hash,Block3Changed.peer,Block3Changed.type_code));
-        }}>Mine</button>
+        }}>Mine</MineButton>
       </div>
     );
   

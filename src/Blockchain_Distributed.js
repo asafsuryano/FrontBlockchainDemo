@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {BlockDistributed, BlockTransactions, Transaction} from './ClassesForProject';
 import {ConnectingWithServerFunctions} from './ClassesForProject';
-
+import MineButton from './MineButton'
 
 function Distributed(){
     const [AllblocksPeers,ChangeBlocks]=useState(undefined);
@@ -97,9 +97,9 @@ function Distributed(){
           <br></br>
           <br></br>
         </form>
-        <button onClick={()=>{
+        <MineButton onClick={()=>{
           Block2Changed.mine(4);
-          ChangeParameters(new BlockDistributed(Block2Changed.num,Block2Changed.nonce,Block2Changed.data,Block2Changed.prevHash,Block2Changed.hash,Block2Changed.peer,Block2Changed.type_code))}}>Mine</button>
+          ChangeParameters(new BlockDistributed(Block2Changed.num,Block2Changed.nonce,Block2Changed.data,Block2Changed.prevHash,Block2Changed.hash,Block2Changed.peer,Block2Changed.type_code))}}>Mine</MineButton>
       </div>
     );
 }
