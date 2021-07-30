@@ -181,6 +181,12 @@ async function postFullBlockchain(){
   allTransactionsArr.push(allTransactions2);
   allTransactionsArr.push(allTransactions3);
   allTransactionsArr.push(allTransactions4);
+  for (let i=0;i<allTransactionsArr.length;i++){
+    for (let j=0;j<allTransactionsArr[i].length;j++){
+      let signature=await allTransactionsArr[i][j].signTransaction("");
+      allTransactionsArr[i][j].sign=signature
+    }
+  }
   let blocks=[];
   let blocksA=[];
   let blocksB=[];

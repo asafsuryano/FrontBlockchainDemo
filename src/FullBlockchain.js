@@ -22,19 +22,6 @@ function FullBlockchain(){
       console.log("loaded keys");
       let allBlocks=await ConnectingWithServerFunctions.loadFullBlockchain();
       console.log("loaded all blocks");
-      console.log(allBlocks);
-      for (let i=0;i<allBlocks.length;i++){
-        for (let j=0;j<allBlocks[i].length;j++){
-          for (let k=0;k<allBlocks[i][j].allTransactions.length;k++){
-            allBlocks[i][j].allTransactions[k].sign=await allBlocks[i][j].allTransactions[k].signTransaction(keys[0]);
-          }
-          if (j>0){
-            allBlocks[i][j].prevHash=allBlocks[i][j-1].hash;
-          }
-          allBlocks[i][j].mine(4);
-        }
-        console.log("finished with "+i+" peer");
-      }
       let temp=allBlocks.slice();
       Change([keys,temp]);
     })
