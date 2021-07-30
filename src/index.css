@@ -54,11 +54,27 @@ body {
   width: 100%;
 }
 
-.task {
+.contentLine {
   background: #f4f4f4;
   margin: 5px;
   padding: 10px 20px;
   cursor: pointer;
+}
+
+.contentLine label {
+  margin: 5px;
+  cursor: pointer;
+}
+
+.contentLine input {
+  margin: 5px;
+  padding: 5px;
+  cursor: text;
+}
+
+.readOnly{
+  color: gray;
+  background-color: silver;
 }
 
 /* .task.reminder {
@@ -71,9 +87,10 @@ body {
   justify-content: space-between;
 } */
 
-/* .add-form {
+.hash-form {
   margin-bottom: 40px;
-} */
+  align-items: stretch;
+}
 
 .form-control {
   margin: 20px 0;
@@ -83,9 +100,9 @@ body {
   display: block;
 }
 
-.form-control input {
+.form-control textarea {
   width: 100%;
-  height: 40px;
+  height: 130px;
   margin: 5px;
   padding: 3px 7px;
   font-size: 17px;

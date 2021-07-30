@@ -7,13 +7,17 @@ function HashUi(){
       document.getElementById("hashResult").value=sha256(Text);
     },[Text])
     return (
-      <div className="hashUi">
-        <textarea id="data" name="data" onInput={e=>{
-          ChangeText(e.target.value);
-          }}></textarea>
-        <label  for="data">Data</label>
-        <br></br>
-        <textarea id="hashResult"></textarea>
+      <div className="container">
+        <div className="hash-form">
+          <div className="form-control">
+            <h3  for="data">Data</h3>
+            <textarea id="data" name="data" onInput={e=>{
+              ChangeText(e.target.value);
+              }}></textarea>
+            <br></br>
+            <textarea id="hashResult"></textarea>
+          </div>
+        </div>
       </div>
     )
 }

@@ -6,7 +6,7 @@ export const MineButton = ({onClick}) => {
     return (
         <div>
             
-        <Button text="mine" color="blue" kind={<GiMiner></GiMiner>} >
+        <Button text="mine" onClick={onClick} color="blue" kind={<GiMiner></GiMiner>} >
         
         </Button>
         </div>

@@ -1,6 +1,11 @@
 const sha256 = require("sha256");
 const axios = require('axios');
 const clone=require('clone');
+class BlockJsonToBlock{
+    constructor(data){
+        this.inner = new Block(data.blockNum,data.nonce,data.data,data.prevHash,data.hash,data.type_code)
+    }
+}
 class Block {
     constructor(blockNum,nonce,data,prevHash,hash,type_code){
         this.nonce=nonce;
@@ -488,8 +493,10 @@ class ConnectingWithServerFunctions{
     }
 }
 
+
 module.exports={
     Block:  Block,
+    BlockJsonToBlock: BlockJsonToBlock,
     BlockDistributed: BlockDistributed,
     BlockTransactions: BlockTransactions,
     Transaction: Transaction,

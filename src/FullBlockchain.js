@@ -2,7 +2,7 @@ import {BlockDistributed, BlockTransactions, Transaction} from './ClassesForProj
 import { Message, TransactionSignature } from './ClassesForProject';
 import {ConnectingWithServerFunctions} from './ClassesForProject';
 import React, { useEffect, useState, useRef } from 'react';
-
+import MineButton from './MineButton'
 
 function FullBlockchain(){
     const mounted=useRef(true);
@@ -109,8 +109,8 @@ function BlockFullBlockchain(props){
           <input type="text" id="hash" name="hash" value={Block4Change.hash} readOnly></input>
           <br></br>
         </form>
-        <button onClick={()=>{Block4Change.mine(4);
-          ChangeBlock(new BlockTransactions(Block4Change.num,Block4Change.nonce,Block4Change.allTransactions,Block4Change.prevHash,Block4Change.hash,Block4Change.peer,Block4Change.type_code))}}>Mine</button>
+        <MineButton onClick={()=>{Block4Change.mine(4);
+          ChangeBlock(new BlockTransactions(Block4Change.num,Block4Change.nonce,Block4Change.allTransactions,Block4Change.prevHash,Block4Change.hash,Block4Change.peer,Block4Change.type_code))}}>Mine</MineButton>
       </div>
     );
   
