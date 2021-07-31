@@ -34,26 +34,26 @@ function BlockWithTransactions(props){
     return (
       <div id={"BlockBlockchain"+Block3Changed.peer+Block3Changed.num}>
         <form>
+        <label for="blockNum">block number:</label>
           <input type="text" id="blockNum" name="blockNum" value={Block3Changed.num} readOnly></input>
-          <label for="blockNum">block number:</label>
           <br></br>
+          <label for="nonce">nonce:</label>
           <input type="text" id={"nonce"+Block3Changed.num} name={"nonce"} value={Block3Changed.nonce} onChange={(e)=>{
             //e.stopPropagation()
             ChangeParameters(new BlockTransactions(Block3Changed.num,e.target.value,Block3Changed.allTransactions,Block3Changed.prevHash,"",Block3Changed.peer,Block3Changed.type_code));
           }}></input>
-          <label for="nonce">nonce:</label>
           <br></br>
             <div className="allTransactions">
               <p>Tx: </p>
               {Block3Changed.allTransactions.map(transaction=>
               <TransactionUi transaction={transaction} updateTransaction={calculateNewHashAndChangeBlockchain} key={transaction.number} />)}
             </div>
+          <label for="prevHash">Prev Hash:</label>
           <input type="text" id={"prevHash"+Block3Changed.num} name="prevHash" value={props.prevHash} readOnly>
             </input>
-          <label for="prevHash">Prev Hash:</label>
           <br></br>
-          <input type="text" id={"blockHash"+Block3Changed.num} name="blockHash" value={Block3Changed.hash}  readOnly></input>
           <label for="blockHash">Hash:</label>
+          <input type="text" id={"blockHash"+Block3Changed.num} name="blockHash" value={Block3Changed.hash}  readOnly></input>
           <br></br>
         </form>
         <MineButton onClick={()=>{

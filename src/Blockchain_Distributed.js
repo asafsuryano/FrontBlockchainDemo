@@ -71,29 +71,29 @@ function Distributed(){
     return (
       <div id={"BlockBlockchain"+Block2Changed.peer+Block2Changed.num}>
         <form>
+        <label for="blockNum">block number:</label>
           <input type="text" id="blockNum" name="blockNum" value={Block2Changed.num} onChange={()=>{}} readOnly></input>
-          <label for="blockNum">block number:</label>
           <br></br>
+          <label for="nonce">nonce:</label>
           <input type="text" id={"nonce"+Block2Changed.num} name={"nonce"} value={Block2Changed.nonce} onChange={(e)=>{
             console.log("in onchange nonce text");
             //e.stopPropagation()
             ChangeParameters(new BlockDistributed(Block2Changed.num,e.target.value,Block2Changed.data,Block2Changed.prevHash,"",Block2Changed.peer,Block2Changed.type_code));
           }}></input>
-          <label for="nonce">nonce:</label>
           <br></br>
+          <label for="dataArea">Data:</label>
           <input type="textarea" id={"dataArea"+Block2Changed.num} name="dataArea" onChange={(e)=>{
             console.log("in onchange data");
             //e.stopPropagation();
             ChangeParameters(new BlockDistributed(Block2Changed.num,Block2Changed.nonce,e.target.value,Block2Changed.prevHash,"",Block2Changed.peer,Block2Changed.type_code));
           }}></input>
-          <label for="dataArea">Data:</label>
           <br></br> 
+          <label for="prevHash">Prev Hash:</label>
           <input type="text" id={"prevHash"+Block2Changed.num} name="prevHash" value={props.prevHash} onChange={()=>{}} readOnly>
             </input>
-          <label for="prevHash">Prev Hash:</label>
           <br></br>
-          <input type="text" id={"blockHash"+Block2Changed.num} name="blockHash" value={Block2Changed.hash} onChange={()=>{}} readOnly></input>
           <label for="blockHash">Hash:</label>
+          <input type="text" id={"blockHash"+Block2Changed.num} name="blockHash" value={Block2Changed.hash} onChange={()=>{}} readOnly></input>
           <br></br>
           <br></br>
         </form>

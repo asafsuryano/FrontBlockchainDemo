@@ -84,10 +84,11 @@ function BlockFullBlockchain(props){
     return(
       <div id={"block"+Block4Change.peer+Block4Change.num}>
         <form>
+        <label for="blockNum">block number:</label>
           <input type="text" id="blockNum" name="blockNum" value={Block4Change.num}></input>
-          <label for="blockNum">block number:</label>
           <br></br>
-          <input type="text" id={"nonce"+Block4Change.num} name={"nonce"} value={Block4Change.nonce} onChange={(e)=>{
+          <label for="nonce">nonce:</label>
+          <input type="number" id={"nonce"+Block4Change.num} name={"nonce"} value={Block4Change.nonce} onChange={(e)=>{
             //e.stopPropagation()
             let temp=e.target.value;
             if (Number(temp)!=='NaN'){
@@ -95,7 +96,6 @@ function BlockFullBlockchain(props){
             }
             ChangeBlock(new BlockTransactions(Block4Change.num,temp,Block4Change.allTransactions,Block4Change.prevHash,"",Block4Change.peer,Block4Change.type_code));
           }}></input>
-          <label for="nonce">nonce:</label>
           <br></br>
             <div className="allTransactions">
               <p>Tx: </p>
